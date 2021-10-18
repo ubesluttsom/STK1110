@@ -1,0 +1,29 @@
+---
+title: "`STK1110-h21:` Obligatorisk innlevering 2"
+author: "Martin Mihle Nygaard (`martimn`)"
+---
+
+# Oppgave 1 --- Bare blåbær
+
+Jeg lager et histogram over målingene, $X_1, X_2, … , X_n$, for å forsikre meg
+om at de er sånn passe normalfordelt.
+```{r}
+anotocyan <- c(525, 587, 547, 558, 591, 531, 571, 551,
+               566, 622, 561, 502, 556, 565, 562)
+blåbær    <- data.frame(anotocyan)
+hist(blåbær$anotocyan)
+```
+Og det ser det ut som de er. $X_1, X_2, … , X_n$ kan da sees på som tilfeldige
+uttrekninger fra en normalfordeling med forventningsverdi $μ$ og standardavvik 
+
+Jeg lar $Z$ være en standard normalfordelt
+variabel, gitt ved $$ Z = \frac {X - μ} σ .$$ Siden vi ønsker at
+sannsynligheten for $Z$ (og snart $μ$) skal være .95, setter jeg opp
+sannsynlighetsintervallet $$ P(-1.96 < Z = \frac {X - μ} σ < 1.96) =
+.95$$
+
+Vi vet at forventningsverdien $μ$ 
+
+# Oppgave 2 --- Hete kropper
+
+# Oppgave 3 --- Fedre i tidsklemma
