@@ -1,29 +1,58 @@
 ---
 title: "`STK1110-h21:` Obligatorisk innlevering 2"
 author: "Martin Mihle Nygaard (`martimn`)"
+output:
+  pdf_document:
+    latex_engine: xelatex
+    extra_dependencies: ["commath", "lipsum"]
 ---
 
 # Oppgave 1 --- Bare blåbær
 
+## Oppgave (a) --- 95% konfidensintervall
+
 Jeg lager et histogram over målingene, $X_1, X_2, … , X_n$, for å forsikre meg
 om at de er sånn passe normalfordelt.
+
 ```{r}
-anotocyan <- c(525, 587, 547, 558, 591, 531, 571, 551,
-               566, 622, 561, 502, 556, 565, 562)
+anotocyan <- c(525, 587, 547, 558, 591, 531, 571, 551, 566, 622, 561, 502, 556, 565, 562)
 blåbær    <- data.frame(anotocyan)
-hist(blåbær$anotocyan)
+hist(anotocyan)
 ```
+
 Og det ser det ut som de er. $X_1, X_2, … , X_n$ kan da sees på som tilfeldige
-uttrekninger fra en normalfordeling med forventningsverdi $μ$ og standardavvik 
+uttrekninger fra en normalfordeling med forventningsverdi $μ$ og standardavvik
+$σ$. Da vil snittet av $n$ prøver, $\bar{X}$, være normalfordelt
+$N(μ,σ/\sqrt{n})$ (fra Devore, s. 297).
 
-Jeg lar $Z$ være en standard normalfordelt
-variabel, gitt ved $$ Z = \frac {X - μ} σ .$$ Siden vi ønsker at
-sannsynligheten for $Z$ (og snart $μ$) skal være .95, setter jeg opp
-sannsynlighetsintervallet $$ P(-1.96 < Z = \frac {X - μ} σ < 1.96) =
-.95$$
+Jeg lar $Z$ være en standard normalfordelt variabel, gitt ved $$ Z = \frac
+{\bar{X} - μ} {σ/\sqrt{n}}.$$ Siden vi ønsker at sannsynligheten for $Z$ (og
+snart også $μ$) skal være .95, setter jeg opp sannsynlighetsintervallet $$ P
+\del{ -1.96 < Z = \frac {\bar{X} - μ} {σ/\sqrt{n}} < 1.96 } = .95 $$
 
-Vi vet at forventningsverdien $μ$ 
+Jeg ganger med $σ/\sqrt{n}$, trekker fra $\bar{X}$, bytter fortegn (som også
+snur ulikhetstegn). Dette gir meg $$ P \del{ \bar{X} - 1.96 ⋅ \frac σ
+{\sqrt{n}} < μ < \bar{X} + 1.96 ⋅ \frac σ {\sqrt{n}} } = .95 $$ Altså, det er
+95% sannsynlig at $μ$ befinner seg i intervallet $\intoo{\bar X
+- 1.96 ⋅ \frac σ {\sqrt n}, \bar X + 1.96 ⋅ \frac σ {\sqrt n}}$.
+
+Jeg bruker `R` til å beregne $\bar X$ og $σ / \sqrt n$, som jeg setter rett inn
+i intervallet. Jeg får et resultat som fra histogrammet ser rimelig ut.
+```{r}
+snitt         <- mean(anotocyan)
+standardavvik <- sd(anotocyan)
+c(snitt, standardavvik)
+c(snitt - 1.96 * standardavvik, snitt + 1.96 * standardavvik) # konfidensintervallet
+```
+
+## Oppgave (b) --- Bootstrap
+
+\lipsum
 
 # Oppgave 2 --- Hete kropper
 
+\lipsum[3]
+
 # Oppgave 3 --- Fedre i tidsklemma
+
+\lipsum[8]
