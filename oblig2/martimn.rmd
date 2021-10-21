@@ -9,7 +9,7 @@ output:
 
 # Oppgave 1 --- Bare blåbær
 
-## Oppgave (a) --- 95% konfidensintervall
+## Deloppgave (a) --- 95% konfidensintervall
 
 Jeg lager et histogram over målingene, $X_1, X_2, … , X_n$, for å forsikre meg
 om at de er sånn passe normalfordelt.
@@ -41,12 +41,12 @@ KI <- c(anotocyan.mean - qt(1-alpha, anotocyan.n-1) * anotocyan.sd / sqrt(anotoc
 
 Dette gir 95% konfidensintervallet (`r round(KI[1], 3)`, `r round(KI[2], 3)`).
 
-## Oppgave (b) --- Simulert $t$-fordeling konfidensintervall
+## Deloppgave (b) --- Simulert $t$-fordeling konfidensintervall
 
 ```{r}
 teller <- 0
 for (i in 1:10000) {
-  uttrekk      <- rnorm(15, mean = 558, sd = 30)   # trekk ut 15 observasjoner
+  uttrekk      <- rnorm(15, mean = 558, sd = 30)     # trekk ut 15 observasjoner
   uttrekk.mean <- mean(uttrekk)                      # finn snittet av disse
   uttrekk.sd   <- sd(uttrekk)                        # finn standardavvik
   intervall    <- c(uttrekk.mean - qt(0.975, 15-1) * uttrekk.sd / sqrt(15),
@@ -63,7 +63,7 @@ lusløs, er dette akkurat som intervallet forutså; 95%-konfidensintervall betyr
 at verdien vi undersøker skal være innafor 95% av tiden, som er omtrent
 tilfellet i disse simuleringene.
 
-## Oppgave (c) --- Simulert konfidensintervall for store utvalg
+## Deloppgave (c) --- Simulert konfidensintervall for store utvalg
 
 Gjør akkurat samme steg som forrige gang, bare med alternativt intervall, som
 spesifisert i oppgaven.
@@ -89,7 +89,7 @@ konfidensintervall; andelen innenfor intervallet blir for lavt. Dette er som
 forventet, siden vi har så få observasjoner (15), som strider med betingelsen
 «stort utvalg».
 
-## Oppgave (d) --- Konfidensintervall for $σ$
+## Deloppgave (d) --- Konfidensintervall for $σ$
 
 Jeg bruker formuleringen av konfidensintervall for varians og standardavvik fra
 læreboka (Devore, s. 410).
@@ -119,7 +119,7 @@ I en eksempelkjøring, får vi `r teller` intervaller som inneholder 30. Dette
 utgjør en andel på `r teller/100`%. Som er som er svært nær forventningen på
 95%.
 
-## Oppgave (e) --- Konfidensintervall for $μ$ med $t$-fordelt populasjon
+## Deloppgave (e) --- Konfidensintervall for $μ$ med $t$-fordelt populasjon
 
 ```{r}
 teller <- 0
@@ -144,7 +144,7 @@ eller annen streng definisjon.
 
 [^robust]: \url{https://en.wikipedia.org/wiki/Robust_confidence_intervals}
 
-## Oppgave (f) --- Konfidensintervall for $σ$ med $t$-fordelt populasjon
+## Deloppgave (f) --- Konfidensintervall for $σ$ med $t$-fordelt populasjon
 
 ```{r}
 teller <- 0
@@ -167,7 +167,7 @@ $t$-fordelt i stedet.
 
 # Oppgave 2 --- Hete kropper
 
-## Oppgave (a) --- Boksplott
+## Deloppgave (a) --- Boksplott
 
 ```{r}
 temp <- read.table("https://www.uio.no/studier/emner/matnat/math/STK1110/data/temp.txt",
@@ -178,7 +178,7 @@ boxplot(temp, col = c("red", "blue"))
 Det ser ut som menn har en lavere kroppstemperatur enn kvinner i dette
 datasettet. Men snittverdiene er ikke ekstremt forskjellige.
 
-## Oppgave (b) --- Normalfordelingsplott
+## Deloppgave (b) --- Normalfordelingsplott
 
 ```{r}
 curve(dnorm(x, mean(temp$Menn), sd(temp$Menn)),
@@ -198,7 +198,7 @@ legend("topright",
 Igjen, så ser det ut som mennene i målingene har en lavere kroppstemperatur enn
 kvinnene.
 
-## Oppgave (c) --- Normalfordelte utvalg med ukjent, lik varians
+## Deloppgave (c) --- Normalfordelte, små, utvalg med ukjent, lik, varians
 
 La den stokastiske variabelen $X$ være kroppstemperaturen en tilfeldig kvinne
 og $Y$ til en tilfeldig mann. Jeg antar at observasjonene $X_1, … , X_m$ og
@@ -213,32 +213,39 @@ utvalgstørrelse (altså at $m≠n$) er
 $$
   S^2_p = \frac {m-1} {m+n-2} S^2_K + \frac {n-1} {n+m-2} S^2_M
 $$
-hvor $S^2_{\{K,M\}}$ er variansen til observasjonene.
+hvor $S^2_{\{K,M\}}$ er den observerte variansen.
 
 Jeg kan nå konstruere en ny stokastisk, standardisert, variabel $T$. Denne er
 $t$-fordelt ettersom vi har for få observasjoner til å anta «stort» utvalg.
-Altså,
-$$
+Altså,^[`TODO:` kjapt forklar hvor $\sqrt{\frac 1m + \frac1n}$ kommer fra.]
+```{=latex}
+\begin{equation}
   T = \frac { \del{\bar{X}-\bar{Y}} - \del{μ_K - μ_M} } { S_p \sqrt{\frac 1m + \frac1n} }
-    \sim t_{m+n-2}
-$$
+  \sim t_{m+n-2} \label{eq:T}
+\end{equation}
+```
 
 ### Hypotesetest
 
-Jeg ønsker å undersøke om $μ_K ≠ μ_M$, eller ekvivalent $μ_K - μ_M = 0$. Jeg
+Jeg ønsker å undersøke om $μ_K ≠ μ_M$, eller ekvivalent $μ_K - μ_M ≠ 0$. Jeg
 formulerer derfor nullhypotesen $H_0$ og alternativhypotesen $H_a$ som følger:
 
   * $H_0$: $μ_K - μ_M = Δ_0 = 0$
   * $H_a$: $μ_K - μ_M ≠ Δ_0 = 0$
 
-`TODO: nyansér dette!`
+Jeg bruker \eqref{eq:T} som testvariabel, hvor $μ_K - μ_M$ erstattes med $Δ_0$.
+Dette fungerer ettersom denne $t$-fordelingen er sentrert rundt 0
+(standardisert), og jeg ønsker å undersøke om differansen $Δ_0$ er langt nok
+unna 0, gitt et visst standardavvik. Jeg ønsker å være 95% sikker, eller
+«konfident», om du vil. Derfor formuleres forkastingsbettingelsen slik:
 $$
   H_0 \text{ forkastes dersom } \left.
   \begin{cases}
-    t ≥ t_{α/2,m+n-2} \\
-    t ≤ t_{α/2,m+n-2}
+    t ≤ t_{α/2,m+n-2} \\
+    t ≥ t_{1-α/2,m+n-2}
   \end{cases}\right\}
   \text{ hvor } t = \frac {\del{\bar{X}-\bar{Y}} - Δ_0} {S_p {\sqrt{\frac 1m + \frac1n}}}
+  \text{ og } α = 1 - 95\%.
 $$
 
 ### Konfidensintervall
@@ -248,22 +255,223 @@ i. Øvre og nedre skranke for dette intervallet blir $±t_{α/2,m+n-2}$. Jeg
 manipulerer dette intervallet til heller å beskrive $\del{μ_K-μ_M}$:
 ```{=latex}
 \begin{align*}
-  1-α &= \text{P}\del{ -t_{α/2,m+n-2} ≤ \frac { \del{\bar{X}-\bar{Y}} - \del{μ_K - μ_M} } { S_p \sqrt{\frac 1m + \frac1n}} ≤ t_{α/2,m+n-2} } \\
-      &= \text{P}\del{ -t_{α/2,m+n-2} S_p \sqrt{\frac 1m + \frac1n} ≤ { \del{\bar{X}-\bar{Y}} - \del{μ_K - μ_M} } ≤ {t_{α/2,m+n-2}} {S_p} {\sqrt{\frac 1m + \frac1n}} } \\
-  %   &= \text{P}\del{ -\del{\bar{X}-\bar{Y}} - t_{α/2,m+n-2} S_p {\sqrt{\frac 1m + \frac1n}} ≤ { - \del{μ_K - μ_M} } ≤ -\del{\bar{X}-\bar{Y}} + {t_{α/2,m+n-2}} S_p \sqrt{\frac 1m + \frac1n} } \\
-      &= \text{P}\del{  \del{\bar{X}-\bar{Y}} + t_{α/2,m+n-2} S_p {\sqrt{\frac 1m + \frac1n}} ≥ μ_K - μ_M ≥ \del{\bar{X}-\bar{Y}} - t_{α/2,m+n-2} S_p \sqrt{\frac 1m + \frac1n} } \\
-      &= \text{P}\del{  \del{\bar{X}-\bar{Y}} - t_{α/2,m+n-2} S_p {\sqrt{\frac 1m + \frac1n}} ≤ μ_K - μ_M ≤ \del{\bar{X}-\bar{Y}} + t_{α/2,m+n-2} S_p \sqrt{\frac 1m + \frac1n} }
+  1-α &= \text{P}\del{ t_{α/2,m+n-2}                                                             ≤ \frac { \del{\bar{X}-\bar{Y}} - \del{μ_K - μ_M} } { S_p \sqrt{\frac 1m + \frac1n}} ≤ t_{1-α/2,m+n-2} } \\
+      &= \text{P}\del{ t_{α/2,m+n-2} S_p \sqrt{\frac 1m + \frac1n}                               ≤ { \del{\bar{X}-\bar{Y}} - \del{μ_K - μ_M} }                                        ≤ t_{1-α/2,m+n-2} {S_p} {\sqrt{\frac 1m + \frac1n}} } \\
+      &= \text{P}\del{ - \del{\bar{X}-\bar{Y}} + t_{α/2,m+n-2} S_p {\sqrt{\frac 1m + \frac1n}}   ≤ - μ_K - μ_M                                                                        ≤ - \del{\bar{X}-\bar{Y}} + t_{1-α/2,m+n-2} S_p \sqrt{\frac 1m + \frac1n} } \\
+      &= \text{P}\del{   \del{\bar{X}-\bar{Y}} - t_{α/2,m+n-2} S_p {\sqrt{\frac 1m + \frac1n}}   ≥   μ_K - μ_M                                                                        ≥   \del{\bar{X}-\bar{Y}} - t_{1-α/2,m+n-2} S_p \sqrt{\frac 1m + \frac1n} } \\
+      &= \text{P}\del{   \del{\bar{X}-\bar{Y}} - t_{1-α/2,m+n-2} S_p {\sqrt{\frac 1m + \frac1n}} ≤   μ_K - μ_M                                                                        ≤   \del{\bar{X}-\bar{Y}} - t_{α/2,m+n-2} S_p \sqrt{\frac 1m + \frac1n} }
 \end{align*}
 ```
 Siste linje gir meg formuleringen av konfidensintervallet for differansen mellom
 forventningene til de to variablene $X$ og $Y$:
 $$
   \intoo{
-    \del{\bar{X}-\bar{Y}} - t_{α/2,m+n-2} · S_p {\sqrt{\frac 1m + \frac1n}},
-    \del{\bar{X}-\bar{Y}} + t_{α/2,m+n-2} · S_p {\sqrt{\frac 1m + \frac1n}}
+    \del{\bar{X}-\bar{Y}} - t_{1-α/2,m+n-2} · S_p {\sqrt{\frac 1m + \frac1n}},
+    \del{\bar{X}-\bar{Y}} - t_{α/2,m+n-2} · S_p {\sqrt{\frac 1m + \frac1n}}
   }
 $$
 
+### *P*-verdi
+
+```{=latex}
+\begin{align*}
+  P\text{-verdi} &= P\del{ -t ≥ T ≥ t \ | \ μ_K - μ_M = 0 } \\
+                 &≈ \text{ område under $t$-kurven før $-t$ og etter $t$} \\
+                 &= 1 - \int_{-t}^{t}{t_{m+n-2}} \\
+                 &= 2 · \del{ 1 - F_{m+n-2}(t)}
+\end{align*}
+```
+Hvor $F_{v}$ er den kumulative fordelingsfunksjonen for $t$-fordelingen med $v$
+frihetsgrader. Her utnytter jeg at $t$-fordelingen er symmetrisk, som er
+hvorfor jeg ganger med to (for nedre og øvre hale).
+
+### Sjekk i `R`
+
+```{r}
+# Hypotesetest
+alpha    <- 1-0.95
+Δ_0      <- 0
+x_strek  <- mean(temp$Kvinner)
+y_strek  <- mean(temp$Menn)
+m        <- length(temp$Kvinner)
+n        <- length(temp$Menn)
+S_p      <- sqrt(((m-1)/(m+n-2)) * var(temp$Kvinner) + ((n-1)/(n+m-2)) * var(temp$Menn))
+t        <- ((x_strek-y_strek) - Δ_0) / (S_p * sqrt(1/m + 1/n))
+skranker <- c(qt(alpha/2, m+n-2), qt(1-alpha/2, m+n-2))
+
+# Konfidensintervall
+KI <- c((x_strek-y_strek) - qt(1-alpha/2, m+n-2) * S_p * sqrt(1/m + 1/n),
+        (x_strek-y_strek) - qt(alpha/2, m+n-2) * S_p * sqrt(1/m + 1/n))
+
+# P-verdi
+P_verdi <- 2*(1-pt(t, m+n-2))
+```
+
+Dette gir $t =`r t`$, som ligger utenfor intervallet $\intoo{`r skranker[1]`,
+`r skranker[2]`}$. $H_0$ bør derfor forkastes. $P$-verdien er i samsvar med
+denne konklusjonen, siden $P$-verdi $=`r P_verdi`<α=0.05$. Konfidensintervallet
+blir $\intoo{`r KI[1]`, `r KI[2]`}$.
+
+Jeg får god overensstemmelse med `R`s innebygde $t$-test.
+```{r}
+t.test(temp$Kvinner, temp$Menn)
+```
+
+## Deloppgave (d) --- Ulik varians
+
+I tilfellet med forskjellig varians må jeg justere litt på \eqref{eq:T}.^[Her
+er jeg lite stødig, og innrømmer ærlig at jeg regurgiterer forelesningsfoilene.]
+```{=latex}
+\begin{align*}
+  T &= \frac { \del{\bar{X}-\bar{Y}} - \del{μ_K - μ_M} } {\sqrt{\frac {S^2_K}m + \frac{S^2_M}n} } \\
+    &= \frac { \del{\bar{X}-\bar{Y}} - \del{μ_K - μ_M} } {\sqrt{\frac {S^2_K}m + \frac{S^2_M}n} } · \frac {\del{{\sqrt{σ^2_K/m + σ^2_M/n}}}^{-1}} {\del{\sqrt{σ^2_K/m + σ^2_M/n}}^{-1}} \\
+    &= \frac { \del{\bar{X}-\bar{Y}} - \del{μ_K - μ_M} } {\sqrt{σ^2_K/m + σ^2_M/n} } · \frac {\del{\sqrt{\frac {S^2_K}m + \frac{S^2_M}n}}^{-1}} {\del{\sqrt{σ^2_K/m + σ^2_M/n}}^{-1}} \\
+    &= \frac { \del{\bar{X}-\bar{Y}} - \del{μ_K - μ_M} } {\sqrt{σ^2_K/m + σ^2_M/n} } · \del{\sqrt{\frac {\frac {S^2_K}m + \frac{S^2_M}n} {σ^2_K/m + σ^2_M/n} }}^{-1} \\
+    &= Z · \sbr{ \sqrt { \frac U ν } }^{-1}
+       \text{, hvor } Z=\frac{\del{\bar{X}-\bar{Y}}-\del{μ_K-μ_M}}{\sqrt{σ^2_K/m+σ^2_M/n}} ∼ N(0,1)
+       \text{ og } \frac Uν=\frac{\frac{S^2_K}m+\frac{S^2_M}n}{σ^2_K/m+σ^2_M/n}
+\end{align*}
+```
+$U$ kan tilnærmes med $χ^2_ν$ fordelingen. Da brukes en justert $v$, som tilnærmes
+med de observerte variansene $S^2_K$ og $S^2_M$ slik:
+$$
+  ν = \frac {σ^2_K/m + σ^2_M/n} { \del{\frac{σ^2_K}m}^2 / \del{m-1} + \del{\frac{σ^2_M}n}^2 / \del{n-1}}
+    ≈ \frac {S^2_K/m + S^2_M/n} { \del{\frac{S^2_K}m}^2 / \del{m-1} + \del{\frac{S^2_M}n}^2 / \del{n-1}}
+$$
+
+Denne $ν$-en brukes tilnærme riktig $t$-fordeling:
+$$
+  T = \frac{\del{\bar{X}-\bar{Y}}-\del{μ_K-μ_M}}{\sqrt{S^2_K/m+S^2_M/n}} ∼ t_ν
+$$
+
+### Hypotesetest
+
+Som i forrige deloppgave, men forkastingsbettingelsen blir
+$$
+  H_0 \text{ forkastes dersom } \left.
+  \begin{cases}
+    t ≤ t_{α/2,ν} \\
+    t ≥ t_{1-α/2,ν}
+  \end{cases}\right\}
+  \text{ hvor } t = \frac{\del{\bar{X}-\bar{Y}}-Δ_0}{\sqrt{S^2_K/m+S^2_M/n}}
+  \text{ og } α = 1 - 95\%.
+$$
+
+### Konfidensintervall
+
+Utledningen er analog til forrige oppgave. Konfidensintervallet blir
+$$
+  \intoo{
+    \del{\bar{X}-\bar{Y}} - t_{1-α/2,ν} · {\sqrt{S^2_K/m+S^2_M/n}},
+    \del{\bar{X}-\bar{Y}} - t_{α/2,ν}   · {\sqrt{S^2_K/m+S^2_M/n}}
+  }
+$$
+
+### *P*-verdi
+
+Igjen, som i forrige oppgave, men med $ν$ innsatt for $m+n-2$.
+```{=latex}
+\begin{align*}
+  P\text{-verdi} &= P\del{ -t ≥ T ≥ t \ | \ μ_K - μ_M = 0 } \\
+                 &≈ \text{ område under $t$-kurven før $-t$ og etter $t$} \\
+                 &= 1 - \int_{-t}^{t}{t_{ν}} \\
+                 &= 2 · \del{ 1 - F_{ν}(t)}
+\end{align*}
+```
+
+### Utregning i `R`
+
+```{r}
+# Hypotesetest
+v        <- ( (var(temp$Kvinner)/m + var(temp$Menn)/n)
+            / ((var(temp$Kvinner)/m)^2/(m-1) + (var(temp$Menn)/n)^2/(n-1)))
+t        <- ( ((x_strek-y_strek) - Δ_0)
+            / sqrt(var(temp$Kvinner)/m + var(temp$Menn)/n))
+skranker <- c(qt(alpha/2, v), qt(1-alpha/2, v))
+
+# Konfidensintervall
+KI <- c((x_strek-y_strek)-qt(1-alpha/2, v) * sqrt(var(temp$Kvinner)/m+var(temp$Menn)/n),
+        (x_strek-y_strek)-qt(alpha/2, v)   * sqrt(var(temp$Kvinner)/m+var(temp$Menn)/n))
+
+# P-verdi
+P_verdi <- 2*(1-pt(t, v))
+```
+
+Dette gir $t =`r t`$, som ligger utenfor intervallet $\intoo{`r skranker[1]`,
+`r skranker[2]`}$. $H_0$ bør derfor fortsatt forkastes (om jeg ikke har regna
+feil). $P$-verdien er fortsatt i samsvar: $P$-verdi $=`r P_verdi`<α=0.05$.
+Konfidensintervallet blir $\intoo{`r KI[1]`, `r KI[2]`}$.
+
+Det virker som antagelsen om ulik varians drastisk styrker $H_a$. Litt
+spekulasjon, men fra plottet i deloppgave (a) kan vi se at observasjonene av
+kvinnenes temperatur har noe mindre varians; hvis denne variansen hadde vært
+mer jevnstor med mennenes (altså antagelse om lik varians), ville de to
+fordelingene overlappet mer, og desto mer observasjonene overlapper, jo
+vanskeligere er det å fastslå med sikkerhet at de er forskjellige? Derfor vil
+sikkerheten øke (og $P$-verdien minske).
+
+## Deloppgave (e) --- F-test
+
+`TODO!`
+
+## Deloppgave (f) --- Prediksjonsintervall
+
+`TODO!`
+
 # Oppgave 3 --- Fedre i tidsklemma
 
-\lipsum[8]
+## Deloppgave (a) --- Hypotesetest, p-verdi
+
+Dette er et «stort» utvalg. La $p_M$ og $p_F$ være henholdsvis andelen mødre og
+fedre i «tidsklemma», og $\hat p_{\{M,F\}}$ er de observerte andelene. La $\hat p$
+være et vektet gjennomsnitt av de to populasjonsandelene, altså
+$$
+  \hat p = \frac m {m+n} \hat p_M + \frac n {n+m} \hat p_F.
+$$
+Hvor $m$ og $n$ er antall mødre og fedre spurt, henholdsvis (begge er 3000 i
+denne undersøkelsen). Jeg formulerer følgende hypoteser:
+
+  * $H_0$: $p_M - p_F = 0$
+  * $H_a$: $p_M - p_F ≠ 0$
+
+Og setter forkastingsbettingelsen
+$$
+  H_0 \text{ forkastes dersom } \left.
+  \begin{cases}
+    z ≤ z_{α/2} \\
+    z ≥ z_{1-α/2}
+  \end{cases}\right\}
+  \text{ hvor } z = \frac{\hat p_M - \hat p_F}{\sqrt{{\hat p (1-\hat p) \del{1/m+1/n}}}}
+  \text{ og } α = 1 - 95\%.
+$$
+
+P-verdien er gitt ved $2·\del{1-Φ(|z|)}$.
+
+Jeg bruker `R` til å regne ut de faktiske verdiene.
+```{r}
+pM <- 441
+pF <- 486
+m <- 3000
+n <- 3000
+pM_hatt <- pM/m
+pF_hatt <- pF/n
+p_hatt  <- (m*pM_hatt)/(m+n) + (n*pF_hatt)/(m+n)
+z <- (pM_hatt - pF_hatt) / sqrt(p_hatt*(1/m+1/n))
+forkast <- c(qnorm(alpha/2), qnorm(1-alpha/2))
+p_verdi <- 2*(1-pnorm(abs(z)))
+```
+Test verdien $z = `r z`$ ligger innenfor skrankene `r forkast[1]` og
+`r forkast[2]`. $H_0$ beholdes, og $H_a$ forkastes. P-verdien er
+`r p_verdi`, som ikke er mindre enn signifikansnivået på 5%.
+
+Altså, forskjellen mellom mødre og fedre er ikke signifikant.
+
+## Deloppgave (b) --- Sjekk i `R`
+
+```{r}
+prop.test(c(441, 486), c(3000, 3000))
+```
+Jeg vil si at forskjellen fortsatt *ikke* er signifikant. Men jeg får
+forskjellig p-verdi. Fra p-verdien her ser man at et slikt resultat vil
+forekomme minst 11.6% av tiden, hvis det ikke er noen forskjell mellom
+mødre og fedre (altså om $H_0$ er sann).
