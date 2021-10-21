@@ -16,42 +16,253 @@ om at de er sånn passe normalfordelt.
 
 ```{r}
 anotocyan <- c(525, 587, 547, 558, 591, 531, 571, 551, 566, 622, 561, 502, 556, 565, 562)
-blåbær    <- data.frame(anotocyan)
-hist(anotocyan)
+hist(anotocyan, main = '')
 ```
 
 Og det ser det ut som de er. $X_1, X_2, … , X_n$ kan da sees på som tilfeldige
 uttrekninger fra en normalfordeling med forventningsverdi $μ$ og standardavvik
-$σ$. Da vil snittet av $n$ prøver, $\bar{X}$, være normalfordelt
-$N(μ,σ/\sqrt{n})$ (fra Devore, s. 297).
+$σ$. Ettersom antall observasjoner $n$ er mindre enn tommelfingerreglen 40,
+tar jeg utgangspunkt i $t$-fordelingen. Fra læreboka (Devore s. 403) bruker
+jeg proposisjon (8.14),
+$$ \intoo{ \bar{X} - t_{α/2,n-1} · \frac s {\sqrt n}, \bar{X} + t_{α/2,n-1} ·
+\frac s {\sqrt n} }$$
+hvor $\bar{X}$ er snittet av observasjonene, $s$ standardavviket og $t_{α,n-1}$
+ønsket andel $α$ av tetthetsfunksjonen til $t$-fordelingen med $n-1$
+frihetsgrader. Jeg setter inn for disse og gjør beregningene i `R`.
 
-Jeg lar $Z$ være en standard normalfordelt variabel, gitt ved $$ Z = \frac
-{\bar{X} - μ} {σ/\sqrt{n}}.$$ Siden vi ønsker at sannsynligheten for $Z$ (og
-snart også $μ$) skal være .95, setter jeg opp sannsynlighetsintervallet $$ P
-\del{ -1.96 < Z = \frac {\bar{X} - μ} {σ/\sqrt{n}} < 1.96 } = .95 $$
-
-Jeg ganger med $σ/\sqrt{n}$, trekker fra $\bar{X}$, bytter fortegn (som også
-snur ulikhetstegn). Dette gir meg $$ P \del{ \bar{X} - 1.96 ⋅ \frac σ
-{\sqrt{n}} < μ < \bar{X} + 1.96 ⋅ \frac σ {\sqrt{n}} } = .95 $$ Altså, det er
-95% sannsynlig at $μ$ befinner seg i intervallet $\intoo{\bar X
-- 1.96 ⋅ \frac σ {\sqrt n}, \bar X + 1.96 ⋅ \frac σ {\sqrt n}}$.
-
-Jeg bruker `R` til å beregne $\bar X$ og $σ / \sqrt n$, som jeg setter rett inn
-i intervallet. Jeg får et resultat som fra histogrammet ser rimelig ut.
 ```{r}
-snitt         <- mean(anotocyan)
-standardavvik <- sd(anotocyan)
-c(snitt, standardavvik)
-c(snitt - 1.96 * standardavvik, snitt + 1.96 * standardavvik) # konfidensintervallet
+alpha <- 1 - 0.95
+anotocyan.mean <- mean(anotocyan)
+anotocyan.sd   <- sd(anotocyan)
+anotocyan.n    <- length(anotocyan)
+KI <- c(anotocyan.mean - qt(1-alpha, anotocyan.n-1) * anotocyan.sd / sqrt(anotocyan.n),
+        anotocyan.mean + qt(1-alpha, anotocyan.n-1) * anotocyan.sd / sqrt(anotocyan.n))
 ```
 
-## Oppgave (b) --- Bootstrap
+Dette gir 95% konfidensintervallet (`r round(KI[1], 3)`, `r round(KI[2], 3)`).
 
-\lipsum
+## Oppgave (b) --- Simulert $t$-fordeling konfidensintervall
+
+```{r}
+teller <- 0
+for (i in 1:10000) {
+  uttrekk      <- rnorm(15, mean = 558, sd = 30)   # trekk ut 15 observasjoner
+  uttrekk.mean <- mean(uttrekk)                      # finn snittet av disse
+  uttrekk.sd   <- sd(uttrekk)                        # finn standardavvik
+  intervall    <- c(uttrekk.mean - qt(0.975, 15-1) * uttrekk.sd / sqrt(15),
+                    uttrekk.mean + qt(0.975, 15-1) * uttrekk.sd / sqrt(15))
+  if (intervall[1] <= 558 & 558 <= intervall[2]) {   # hvis 558 er innenfor KI
+    teller <- teller + 1                             # => øk teller med én
+  }
+}
+```
+
+Dette gir `r teller` antall simulerte konfidensintervaller som inneholder 558.
+Dette utgjør `r teller / 100`% av totalt antall simuleringer. Hvis koden min er
+lusløs, er dette akkurat som intervallet forutså; 95%-konfidensintervall betyr
+at verdien vi undersøker skal være innafor 95% av tiden, som er omtrent
+tilfellet i disse simuleringene.
+
+## Oppgave (c) --- Simulert konfidensintervall for store utvalg
+
+Gjør akkurat samme steg som forrige gang, bare med alternativt intervall, som
+spesifisert i oppgaven.
+
+```{r}
+teller <- 0
+for (i in 1:10000) {
+  uttrekk      <- rnorm(15, mean = 558, sd = 30)     # trekk ut 15 observasjoner
+  uttrekk.mean <- mean(uttrekk)                      # finn snittet av disse
+  uttrekk.sd   <- sd(uttrekk)                        # finn standardavvik
+  intervall    <- c(uttrekk.mean - 1.96 * uttrekk.sd / sqrt(15),
+                    uttrekk.mean + 1.96 * uttrekk.sd / sqrt(15))
+  if (intervall[1] <= 558 & 558 <= intervall[2]) {   # hvis 558 er innenfor KI
+    teller <- teller + 1                             # => øk teller med én
+  }
+}
+```
+
+Dette gir (i en eksempelkjøring) `r teller` antall simulerte
+konfidensintervaller som inneholder 558. Dette utgjør `r teller / 100`% av
+totalt antall simuleringer. Altså, dette blir slett ikke et 95%
+konfidensintervall; andelen innenfor intervallet blir for lavt. Dette er som
+forventet, siden vi har så få observasjoner (15), som strider med betingelsen
+«stort utvalg».
+
+## Oppgave (d) --- Konfidensintervall for $σ$
+
+Jeg bruker formuleringen av konfidensintervall for varians og standardavvik fra
+læreboka (Devore, s. 410).
+```{=latex}
+\begin{equation}
+  \intoo{ \frac {(n - 1) S^2} {χ^2_{α/2,n-1}},
+          \frac {(n - 1) S^2} {χ^2_{1-α/2,n-1}} }
+  \label{int:chisqr}
+\end{equation}
+```
+Hvor $χ^2_{α,v}$ er kvantilfunksjonen chi-kvadrat fordelingen. Jeg bruker så
+`R` som i tidligere deloppgaver.
+
+```{r}
+teller <- 0
+for (i in 1:10000) {
+  uttrekk      <- rnorm(15, mean = 558, sd = 30)   # trekk ut 15 observasjoner
+  uttrekk.var  <- var(uttrekk)                     # finn standardavvik
+  intervall    <- sqrt(c((15-1) * uttrekk.var / qchisq(0.975, 15-1, lower.tail = TRUE),
+                         (15-1) * uttrekk.var / qchisq(0.975, 15-1, lower.tail = FALSE)))
+  if (intervall[1] <= 30 & 30 <= intervall[2]) {   # hvis 30 er innenfor KI
+    teller <- teller + 1                           # ==> øk teller med én
+  }
+}
+```
+I en eksempelkjøring, får vi `r teller` intervaller som inneholder 30. Dette
+utgjør en andel på `r teller/100`%. Som er som er svært nær forventningen på
+95%.
+
+## Oppgave (e) --- Konfidensintervall for $μ$ med $t$-fordelt populasjon
+
+```{r}
+teller <- 0
+for (i in 1:10000) {
+  uttrekk   <- rt(15, 7)
+  x         <- 558 + uttrekk * 30
+  intervall <- c(mean(x) - qt(0.975, 15-1) * sd(x) / sqrt(15),
+                 mean(x) + qt(0.975, 15-1) * sd(x) / sqrt(15))
+  if (intervall[1] <= 558 & 558 <= intervall[2]) {   # hvis 30 er innenfor KI
+    teller <- teller + 1                           # ==> øk teller med én
+  }
+}
+```
+
+I en eksempelkjøring, får vi `r teller` intervaller som inneholder 30. Dette
+utgjør en andel på `r teller/100`%.
+
+Øh, hvis oppgaven er tiltenkt å ta stilling til robusthet som beskrevet i denne
+Wikipedia artikkelen[^robust], er jeg usikker. Jeg får jo samme resultat som i
+deloppgave (b), men vet ikke om dette betyr at metoden er «robust» under en
+eller annen streng definisjon.
+
+[^robust]: \url{https://en.wikipedia.org/wiki/Robust_confidence_intervals}
+
+## Oppgave (f) --- Konfidensintervall for $σ$ med $t$-fordelt populasjon
+
+```{r}
+teller <- 0
+for (i in 1:10000) {
+  uttrekk   <- rt(15, 7)
+  x         <- 558 + uttrekk * 30
+  intervall <- sqrt(c((15-1) * var(x) / qchisq(0.975, 15-1, lower.tail = TRUE),
+                      (15-1) * var(x) / qchisq(0.975, 15-1, lower.tail = FALSE)))
+  if (intervall[1] <= 30 & 30 <= intervall[2]) {
+    teller <- teller + 1
+  }
+}
+```
+
+I en eksempelkjøring, får vi `r teller` intervaller som inneholder 30. Dette
+utgjør en andel på `r teller/100`%. Dette er betydelig mindre enn 95%, som var
+det jeg siktet på. Tror dette kommer av at betingelsen om en normalfordelt
+populasjon for bruk av \eqref{int:chisqr} er brutt; populasjonen er nå
+$t$-fordelt i stedet.
 
 # Oppgave 2 --- Hete kropper
 
-\lipsum[3]
+## Oppgave (a) --- Boksplott
+
+```{r}
+temp <- read.table("https://www.uio.no/studier/emner/matnat/math/STK1110/data/temp.txt",
+                   header = TRUE)
+boxplot(temp, col = c("red", "blue"))
+```
+
+Det ser ut som menn har en lavere kroppstemperatur enn kvinner i dette
+datasettet. Men snittverdiene er ikke ekstremt forskjellige.
+
+## Oppgave (b) --- Normalfordelingsplott
+
+```{r}
+curve(dnorm(x, mean(temp$Menn), sd(temp$Menn)),
+      xlim=c(35.5,38), ylim = c(0,1.5),
+      col  = "red",
+      ylab = "", xlab = "")
+curve(dnorm(x, mean(temp$Kvinner), sd(temp$Kvinner)),
+      xlim=c(35.5,38), ylim = c(0,1.5),
+      col  = "blue",
+      add  = TRUE)
+legend("topright",
+       legend = c("Menn", "Kvinner"),
+       col    = c("red", "blue"),
+       pch    = 19)
+```
+
+Igjen, så ser det ut som mennene i målingene har en lavere kroppstemperatur enn
+kvinnene.
+
+## Oppgave (c) --- Normalfordelte utvalg med ukjent, lik varians
+
+La den stokastiske variabelen $X$ være kroppstemperaturen en tilfeldig kvinne
+og $Y$ til en tilfeldig mann. Jeg antar at observasjonene $X_1, … , X_m$ og
+$Y_1, … , Y_n$ er uavhengig identisk fordelt med henholdsvis forventning $μ_K$
+og $μ_M$.
+
+Jeg antar at variansene er like, altså $σ^2_K = σ^2_M = σ^2$, men
+ukjente. Ettersom både $X$ og $Y$ er antatt normalfordelte, vil også
+transformasjonen $\bar{X}-\bar{Y}$ også være normalfordelt med forventning
+$μ_K - μ_M$. En estimator for $σ^2$ som tar høyde for forskjellig
+utvalgstørrelse (altså at $m≠n$) er
+$$
+  S^2_p = \frac {m-1} {m+n-2} S^2_K + \frac {n-1} {n+m-2} S^2_M
+$$
+hvor $S^2_{\{K,M\}}$ er variansen til observasjonene.
+
+Jeg kan nå konstruere en ny stokastisk, standardisert, variabel $T$. Denne er
+$t$-fordelt ettersom vi har for få observasjoner til å anta «stort» utvalg.
+Altså,
+$$
+  T = \frac { \del{\bar{X}-\bar{Y}} - \del{μ_K - μ_M} } { S_p \sqrt{\frac 1m + \frac1n} }
+    \sim t_{m+n-2}
+$$
+
+### Hypotesetest
+
+Jeg ønsker å undersøke om $μ_K ≠ μ_M$, eller ekvivalent $μ_K - μ_M = 0$. Jeg
+formulerer derfor nullhypotesen $H_0$ og alternativhypotesen $H_a$ som følger:
+
+  * $H_0$: $μ_K - μ_M = Δ_0 = 0$
+  * $H_a$: $μ_K - μ_M ≠ Δ_0 = 0$
+
+`TODO: nyansér dette!`
+$$
+  H_0 \text{ forkastes dersom } \left.
+  \begin{cases}
+    t ≥ t_{α/2,m+n-2} \\
+    t ≤ t_{α/2,m+n-2}
+  \end{cases}\right\}
+  \text{ hvor } t = \frac {\del{\bar{X}-\bar{Y}} - Δ_0} {S_p {\sqrt{\frac 1m + \frac1n}}}
+$$
+
+### Konfidensintervall
+
+Jeg ønsker et intervall som det er $1-α$ sannsynlighet for at $T$ befinner seg
+i. Øvre og nedre skranke for dette intervallet blir $±t_{α/2,m+n-2}$. Jeg
+manipulerer dette intervallet til heller å beskrive $\del{μ_K-μ_M}$:
+```{=latex}
+\begin{align*}
+  1-α &= \text{P}\del{ -t_{α/2,m+n-2} ≤ \frac { \del{\bar{X}-\bar{Y}} - \del{μ_K - μ_M} } { S_p \sqrt{\frac 1m + \frac1n}} ≤ t_{α/2,m+n-2} } \\
+      &= \text{P}\del{ -t_{α/2,m+n-2} S_p \sqrt{\frac 1m + \frac1n} ≤ { \del{\bar{X}-\bar{Y}} - \del{μ_K - μ_M} } ≤ {t_{α/2,m+n-2}} {S_p} {\sqrt{\frac 1m + \frac1n}} } \\
+  %   &= \text{P}\del{ -\del{\bar{X}-\bar{Y}} - t_{α/2,m+n-2} S_p {\sqrt{\frac 1m + \frac1n}} ≤ { - \del{μ_K - μ_M} } ≤ -\del{\bar{X}-\bar{Y}} + {t_{α/2,m+n-2}} S_p \sqrt{\frac 1m + \frac1n} } \\
+      &= \text{P}\del{  \del{\bar{X}-\bar{Y}} + t_{α/2,m+n-2} S_p {\sqrt{\frac 1m + \frac1n}} ≥ μ_K - μ_M ≥ \del{\bar{X}-\bar{Y}} - t_{α/2,m+n-2} S_p \sqrt{\frac 1m + \frac1n} } \\
+      &= \text{P}\del{  \del{\bar{X}-\bar{Y}} - t_{α/2,m+n-2} S_p {\sqrt{\frac 1m + \frac1n}} ≤ μ_K - μ_M ≤ \del{\bar{X}-\bar{Y}} + t_{α/2,m+n-2} S_p \sqrt{\frac 1m + \frac1n} }
+\end{align*}
+```
+Siste linje gir meg formuleringen av konfidensintervallet for differansen mellom
+forventningene til de to variablene $X$ og $Y$:
+$$
+  \intoo{
+    \del{\bar{X}-\bar{Y}} - t_{α/2,m+n-2} · S_p {\sqrt{\frac 1m + \frac1n}},
+    \del{\bar{X}-\bar{Y}} + t_{α/2,m+n-2} · S_p {\sqrt{\frac 1m + \frac1n}}
+  }
+$$
 
 # Oppgave 3 --- Fedre i tidsklemma
 
