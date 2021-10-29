@@ -4,7 +4,11 @@ author: "Martin Mihle Nygaard (`martimn`)"
 output:
   pdf_document:
     latex_engine: xelatex
-    extra_dependencies: ["commath", "lipsum"]
+    extra_dependencies: ["commath", "cancel", "lipsum"]
+
+header-includes: |
+    \DeclareMathOperator{\Var}{Var}
+    \DeclareMathOperator{\E}{E}
 ---
 
 # Oppgave 1 --- Bare blåbær
@@ -24,8 +28,10 @@ uttrekninger fra en normalfordeling med forventningsverdi $μ$ og standardavvik
 $σ$. Ettersom antall observasjoner $n$ er mindre enn tommelfingerreglen 40,
 tar jeg utgangspunkt i $t$-fordelingen. Fra læreboka (Devore s. 403) bruker
 jeg proposisjon (8.14),
-$$ \intoo{ \bar{X} - t_{α/2,n-1} · \frac s {\sqrt n}, \bar{X} + t_{α/2,n-1} ·
-\frac s {\sqrt n} }$$
+$$
+  \intoo{ \bar{x} - t_{α/2,n-1} · \frac s {\sqrt n},
+          \bar{x} + t_{α/2,n-1} · \frac s {\sqrt n} }
+$$
 hvor $\bar{X}$ er snittet av observasjonene, $s$ standardavviket og $t_{α,n-1}$
 ønsket andel $α$ av tetthetsfunksjonen til $t$-fordelingen med $n-1$
 frihetsgrader. Jeg setter inn for disse og gjør beregningene i `R`.
@@ -35,8 +41,8 @@ alpha <- 1 - 0.95
 anotocyan.mean <- mean(anotocyan)
 anotocyan.sd   <- sd(anotocyan)
 anotocyan.n    <- length(anotocyan)
-KI <- c(anotocyan.mean - qt(1-alpha, anotocyan.n-1) * anotocyan.sd / sqrt(anotocyan.n),
-        anotocyan.mean + qt(1-alpha, anotocyan.n-1) * anotocyan.sd / sqrt(anotocyan.n))
+KI <- c(anotocyan.mean - qt(1-alpha/2, anotocyan.n-1) * anotocyan.sd / sqrt(anotocyan.n),
+        anotocyan.mean + qt(1-alpha/2, anotocyan.n-1) * anotocyan.sd / sqrt(anotocyan.n))
 ```
 
 Dette gir 95% konfidensintervallet (`r round(KI[1], 3)`, `r round(KI[2], 3)`).
@@ -52,7 +58,7 @@ for (i in 1:10000) {
   intervall    <- c(uttrekk.mean - qt(0.975, 15-1) * uttrekk.sd / sqrt(15),
                     uttrekk.mean + qt(0.975, 15-1) * uttrekk.sd / sqrt(15))
   if (intervall[1] <= 558 & 558 <= intervall[2]) {   # hvis 558 er innenfor KI
-    teller <- teller + 1                             # => øk teller med én
+    teller <- teller + 1                             # ==> øk teller med én
   }
 }
 ```
@@ -95,8 +101,8 @@ Jeg bruker formuleringen av konfidensintervall for varians og standardavvik fra
 læreboka (Devore, s. 410).
 ```{=latex}
 \begin{equation}
-  \intoo{ \frac {(n - 1) S^2} {χ^2_{α/2,n-1}},
-          \frac {(n - 1) S^2} {χ^2_{1-α/2,n-1}} }
+  \intoo{ \frac {(n - 1) s^2} {χ^2_{α/2,n-1}},
+          \frac {(n - 1) s^2} {χ^2_{1-α/2,n-1}} }
   \label{int:chisqr}
 \end{equation}
 ```
@@ -116,8 +122,7 @@ for (i in 1:10000) {
 }
 ```
 I en eksempelkjøring, får vi `r teller` intervaller som inneholder 30. Dette
-utgjør en andel på `r teller/100`%. Som er som er svært nær forventningen på
-95%.
+utgjør en andel på `r teller/100`%. Som er svært nær forventningen på 95%.
 
 ## Deloppgave (e) --- Konfidensintervall for $μ$ med $t$-fordelt populasjon
 
@@ -129,7 +134,7 @@ for (i in 1:10000) {
   intervall <- c(mean(x) - qt(0.975, 15-1) * sd(x) / sqrt(15),
                  mean(x) + qt(0.975, 15-1) * sd(x) / sqrt(15))
   if (intervall[1] <= 558 & 558 <= intervall[2]) {   # hvis 30 er innenfor KI
-    teller <- teller + 1                           # ==> øk teller med én
+    teller <- teller + 1                             # ==> øk teller med én
   }
 }
 ```
@@ -147,56 +152,52 @@ eller annen streng definisjon.
 ## Deloppgave (f) --- Konfidensintervall for $σ$ med $t$-fordelt populasjon
 
 ```{r}
-teller <- 0
+tilde_sigma <- sqrt(1.4) * 30
+teller      <- 0
 for (i in 1:10000) {
   uttrekk   <- rt(15, 7)
-  x         <- 558 + uttrekk * 30
-  intervall <- sqrt(c((15-1) * var(x) / qchisq(0.975, 15-1, lower.tail = TRUE),
-                      (15-1) * var(x) / qchisq(0.975, 15-1, lower.tail = FALSE)))
-  if (intervall[1] <= 30 & 30 <= intervall[2]) {
+  z         <- 558 + uttrekk * tilde_sigma
+  intervall <- sqrt(c((15-1) * var(z) / qchisq(0.975, 15-1, lower.tail = TRUE),
+                      (15-1) * var(z) / qchisq(0.975, 15-1, lower.tail = FALSE)))
+  if (intervall[1] <= tilde_sigma & tilde_sigma <= intervall[2]) {
     teller <- teller + 1
   }
 }
 ```
 
-I en eksempelkjøring, får vi `r teller` intervaller som inneholder 30. Dette
-utgjør en andel på `r teller/100`%. Dette er betydelig mindre enn 95%, som var
-det jeg siktet på. Tror dette kommer av at betingelsen om en normalfordelt
-populasjon for bruk av \eqref{int:chisqr} er brutt; populasjonen er nå
-$t$-fordelt i stedet.
+I en eksempelkjøring, får vi `r teller` intervaller som inneholder
+$\tilde{σ} = \sqrt{1.4}·σ = \sqrt{1.4}·30$. Dette utgjør en andel på
+`r teller/100`%. Dette er mindre enn 95%, som var det jeg siktet på. Tror dette
+kommer av at betingelsen om en normalfordelt populasjon for bruk av
+\eqref{int:chisqr} er brutt; populasjonen er nå $t$-fordelt i stedet, og
+tydeligvis ikke nærme nok normalfordeling.
 
 # Oppgave 2 --- Hete kropper
 
 ## Deloppgave (a) --- Boksplott
 
 ```{r}
+par(ps = 10) 
 temp <- read.table("https://www.uio.no/studier/emner/matnat/math/STK1110/data/temp.txt",
                    header = TRUE)
 boxplot(temp, col = c("red", "blue"))
 ```
 
 Det ser ut som menn har en lavere kroppstemperatur enn kvinner i dette
-datasettet. Men snittverdiene er ikke ekstremt forskjellige.
+datasettet. Men medianen er ikke ekstremt forskjellig.
 
 ## Deloppgave (b) --- Normalfordelingsplott
 
 ```{r}
-curve(dnorm(x, mean(temp$Menn), sd(temp$Menn)),
-      xlim=c(35.5,38), ylim = c(0,1.5),
-      col  = "red",
-      ylab = "", xlab = "")
-curve(dnorm(x, mean(temp$Kvinner), sd(temp$Kvinner)),
-      xlim=c(35.5,38), ylim = c(0,1.5),
-      col  = "blue",
-      add  = TRUE)
-legend("topright",
-       legend = c("Menn", "Kvinner"),
-       col    = c("red", "blue"),
-       pch    = 19)
+par(mfrow = c(1,2), pty = "s", ps = 10)
+qqnorm(temp$Menn, col = "red", xlab = "Menn", ylab = "", main = NULL)
+qqnorm(temp$Kvinner, col = "blue", xlab = "Kvinner", ylab = "", main = NULL)
 ```
 
-Igjen, så ser det ut som mennene i målingene har en lavere kroppstemperatur enn
-kvinnene.
+Det ser ut til at dataene sammenfaller ganske greit med normalfordeling,
+ettersom datapunktene ligger omtrent på en rett linje. Det virker som
+temperaturene målt på kvinner er noe mer kurvet, som kan tyde på en viss
+skjevhet (dette ser man litt i boksplottet også).
 
 ## Deloppgave (c) --- Normalfordelte, små, utvalg med ukjent, lik, varians
 
@@ -210,9 +211,9 @@ ukjente. Ettersom både $X$ og $Y$ er antatt normalfordelte, vil også
 transformasjonen $\bar{X}-\bar{Y}$ også være normalfordelt med forventning
 $μ_K - μ_M$. En estimator for $σ^2$ som tar høyde for forskjellig
 utvalgstørrelse (altså at $m≠n$) er
-$$
-  S^2_p = \frac {m-1} {m+n-2} S^2_K + \frac {n-1} {n+m-2} S^2_M
-$$
+\begin{equation}
+  S^2_p = \frac {m-1} {m+n-2} S^2_K + \frac {n-1} {n+m-2} S^2_M \label{eq:var}
+\end{equation}
 hvor $S^2_{\{K,M\}}$ er den observerte variansen.
 
 Jeg kan nå konstruere en ny stokastisk, standardisert, variabel $T$. Denne er
@@ -266,8 +267,8 @@ Siste linje gir meg formuleringen av konfidensintervallet for differansen mellom
 forventningene til de to variablene $X$ og $Y$:
 $$
   \intoo{
-    \del{\bar{X}-\bar{Y}} - t_{1-α/2,m+n-2} · S_p {\sqrt{\frac 1m + \frac1n}},
-    \del{\bar{X}-\bar{Y}} - t_{α/2,m+n-2} · S_p {\sqrt{\frac 1m + \frac1n}}
+    \del{\bar{x}-\bar{y}} - t_{1-α/2,m+n-2} · s_p {\sqrt{\frac 1m + \frac1n}},
+    \del{\bar{x}-\bar{y}} - t_{α/2,m+n-2} · s_p {\sqrt{\frac 1m + \frac1n}}
   }
 $$
 
@@ -362,8 +363,8 @@ $$
 Utledningen er analog til forrige oppgave. Konfidensintervallet blir
 $$
   \intoo{
-    \del{\bar{X}-\bar{Y}} - t_{1-α/2,ν} · {\sqrt{S^2_K/m+S^2_M/n}},
-    \del{\bar{X}-\bar{Y}} - t_{α/2,ν}   · {\sqrt{S^2_K/m+S^2_M/n}}
+    \del{\bar{x}-\bar{y}} - t_{1-α/2,ν} · {\sqrt{s^2_k/m+s^2_m/n}},
+    \del{\bar{x}-\bar{y}} - t_{α/2,ν}   · {\sqrt{s^2_k/m+s^2_m/n}}
   }
 $$
 
@@ -412,11 +413,105 @@ sikkerheten øke (og $P$-verdien minske).
 
 ## Deloppgave (e) --- F-test
 
-`TODO!`
+Følger metoden beskrevet i seksjon 10.5 (Devore s. 527). Jeg formulerer
+følgende hypoteser om variansen:
+- $H₀$: $σ_K² = σ_M²$
+- $Hₐ$: $σ_K² ≠ σ_M²$
+Som teststatistikk bruker jeg forholdet $f = s_K² / s_M²$, som har en
+F-fordeling med parametre $v₁=m-1$ og $v₂=n-1$. Forkastingsbetingelsene blir
+$$
+  H_0 \text{ forkastes dersom } \left.
+  \begin{cases}
+    f ≤ F_{  α/2,m-1,n-1} \\
+    f ≥ F_{1-α/2,m-1,n-1}
+  \end{cases}\!\!\!\right\}
+  \text{ hvor } f = \frac{s_K²}{s_M²}
+  \text{ og } α = 1 - 95\%.
+$$
+
+```{r}
+m <- length(temp$Kvinner)
+n <- length(temp$Menn)
+f <- var(temp$Kvinner)/var(temp$Menn)
+f.forkast <- c(qf(  alpha/2, m-1, n-1),
+               qf(1-alpha/2, m-1, n-1))
+f.konfint <- c(f*qf(alpha/2, m-1, n-1),
+               f/qf(alpha/2, m-1, n-1))
+```
+Basert på `R` koden over, ser det ut som $f ≈ `r round(f, 3)`$ *ikke* ligger i
+forkastingsområdet til $H₀$, altså innenfor intervallet
+$\intoo{`r round(f.forkast[1],3)`, `r round(f.forkast[2],3)`}$, som impliserer
+at den alternative hypotesen bør forkastes. Et 95% konfidensintervall for $f$
+blir $\intoo{`r round(f.konfint[1],3)`, `r round(f.konfint[2],3)`}$. Jeg får
+god overensstemmelse med den innebygde testen:
+
+```{r}
+var.test(temp$Kvinner, temp$Menn)
+```
 
 ## Deloppgave (f) --- Prediksjonsintervall
 
-`TODO!`
+```{=latex}
+Med utgangspunkt i normalfordeling på både $X$ og $Y$, vet jeg at
+forventningsrette estimatorer for disse er snittet, henholdsvis $\bar X$ og
+$\bar Y$. Videre, vet jeg også at observasjonene er uavhengig identisk fordelt,
+derfor er det rimelig å anta at neste observasjon har samme forventning som de
+foregående. Med disse antagelsene blir forventningen da
+$$
+  \E(X₁₁-Y₁₁) = \E(X₁₁) - \E(Y₁₁) = \E(X) - \E(Y) = \bar X - \bar Y.
+$$
+
+Jeg prøver å finne forventningen og variansen til uttrykket $X₁₁-Y₁₁-(\bar
+X-\bar Y)$:
+\begin{align*}
+  \E\sbr{X₁₁-Y₁₁-(\bar X-\bar Y)}
+    &= \E\sbr{X₁₁} - \E\sbr{Y₁₁} - \E\sbr{\bar X} + \E\sbr{\bar Y} \\
+    &= \bar X - \bar Y - \bar X + \bar Y = 0 \\
+  \Var\sbr{X₁₁-Y₁₁-(\bar X-\bar Y)}
+    &= \Var\sbr{X₁₁} + \Var\sbr{Y₁₁} + \Var\sbr{\bar X} + \Var\sbr{\bar Y} \\
+    &= σ_K² + σ_M² + \frac{σ_K²}m + \frac{σ_M²}n
+\end{align*}
+Videre, hvis jeg antar at variansene til $X$ og $Y$ er like --- som foreslått i
+forrige deloppgave --- kan jeg bruke det vektede snittet til de observerte
+variansene $S²_p$ fra \eqref{eq:var}.
+\begin{align*}
+  σ_K² + σ_M² + \frac{σ_K²}m + \frac{σ_M²}n
+    = S²_p + S²_p + \frac{S²_p}m + \frac{S²_p}n
+    = S²_p \del { 2 + \frac1m + \frac1n }
+\end{align*}
+
+Hvis variansen er kjent, blir fordelingen til uttrykket $X₁₁-Y₁₁-(\bar X-\bar
+Y)$ normalfordelt ettersom dette er en lineærkombinasjon av antatt
+normalfordelte stokastiske variable. Hvis variansen er ukjent er det snakk om
+T-fordeling\footnote{Jeg antar med $m+n-2$ frihetsgrader, men det er jeg
+oppriktig talt usikker på.}. Så --- jeg tror --- vi kan konstruere en
+stokastisk variabel
+$$
+  T₁₁ = \frac { X₁₁-Y₁₁-(\bar X-\bar Y) - 0 } { S_p \sqrt { 2 + \frac1m + \frac1n } } ∼ t_{m+n-2}.
+$$
+Denne $T₁₁$ kan jeg manipulere for å finne et prediksjonsintervall, akkurat som
+tidligere med konfidensintervall.
+\begin{align*}
+  1-α
+  &= \mathrm P\sbr{ t_{α/2,m+n-2} < T₁₁ < t_{1-α/2,m+n-2} } \\
+  &= \mathrm P\sbr{ t_{α/2,m+n-2} < \frac {X₁₁-Y₁₁-(\bar X-\bar Y) - 0} {S_p \sqrt{2 + \frac1m + \frac1n}} < t_{1-α/2,m+n-2} } \\
+  &= \mathrm P\sbr{ \bar X-\bar Y + t_{α/2,m+n-2} · S_p \sqrt{2 + \tfrac1m + \tfrac1n} < X₁₁-Y₁₁ < \bar X-\bar Y + t_{1-α/2,m+n-2} · S_p \sqrt{2 + \tfrac1m + \tfrac1n} }
+\end{align*}
+Setter jeg inn de observerte snittene, $m$, $n$, og $α$, får jeg følgende 95\%
+prediksjonsintervall for $X₁₁-Y₁₁$:
+$$
+  \intoo{ \bar x-\bar y + t_{.025,18} · s_p \sqrt{2 + \tfrac2{10}},\ \bar x-\bar y + t_{.975,18} · s_p \sqrt{2 + \tfrac2{10}} }
+$$
+```
+Dette er altså et intervall vi skal være 95\% sikre på at differansen mellom
+kroppstemperaturen til neste observerte kvinne og mann faller innenfor. Dette
+i motsetning til konfidensintervallet fra deloppgave (c), hvor vi ønsket å
+finne et intervall for den forventede gjennomsnittforskjellen.
+
+Dette intervallet er betydelig bredere enn konfidensintervallet for $μ₁-μ₂$.
+Dette kommer av at usikkerheten rundt $μ₁-μ₂$ minsker med mengden data; mens
+$X₁₁-Y₁₁$ vil \emph{alltid} ha en usikkerhet proporsjonal med den faktiske
+variansen i dataene (reflektert i det konstante leddet under rottegnet).
 
 # Oppgave 3 --- Fedre i tidsklemma
 
@@ -469,9 +564,9 @@ Altså, forskjellen mellom mødre og fedre er ikke signifikant.
 ## Deloppgave (b) --- Sjekk i `R`
 
 ```{r}
-prop.test(c(441, 486), c(3000, 3000))
+prop.test(c(441, 486), c(3000, 3000), correct = FALSE)
 ```
 Jeg vil si at forskjellen fortsatt *ikke* er signifikant. Men jeg får
 forskjellig p-verdi. Fra p-verdien her ser man at et slikt resultat vil
-forekomme minst 11.6% av tiden, hvis det ikke er noen forskjell mellom
-mødre og fedre (altså om $H_0$ er sann).
+forekomme 10.8% av tiden, hvis det ikke er noen forskjell mellom mødre
+og fedre (altså om $H_0$ er sann).
